@@ -6,3 +6,6 @@ WebApp/webApp.js
 WebApp/webApp.HTML
 collect_request.py
 config.py
+__pycache__
+__pycache__
+.vscode

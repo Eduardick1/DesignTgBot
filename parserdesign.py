@@ -231,7 +231,7 @@ async def parspix(message: types.CallbackQuery, type = "all"):
         await registerM(message)#type:ignore
     else: 
         url = f"https://pixabay.com/api/?key={await redis.get('tokenpix')}&q={str(await redis.get('req')).replace(',', '%2C')}&image_type = {type}&per_page = {int(await redis.get('hits')) if int(await redis.get('hits'))>2 else 3}" 
-        r = await httpx.get(url, headers = Headers, follow_redirects=True)
+        r = httpx.get(url, headers = Headers, follow_redirects=True)
         print(r)
         print(f"Pix status: {r.status_code}")
         if r.status_code == 200:
@@ -316,7 +316,7 @@ async def parspex(message: types.CallbackQuery):
         PexHeaders = Headers.copy()
         PexHeaders.update({"Authorization":await redis.get('tokenpex')}) 
         url = f"https://api.pexels.com/v1/search?query={str(await redis.get('req')).replace(',', '%2C')}&per_page = {await redis.get('hits')}"
-        r = await httpx.get(url, headers = PexHeaders, follow_redirects=True)
+        r = httpx.get(url, headers = PexHeaders, follow_redirects=True)
         print(r)
         print(f"Pex status: {r.status_code}")
         if r.status_code == 200:
@@ -400,7 +400,7 @@ async def parsunspl(message: types.CallbackQuery, page = 1): #max hits is 30
         await registerM(message)#type:ignore
     else: 
         url = f"https://api.unsplash.com/search/photos?query={str(await redis.get('req')).replace(' ', '-').replace(',', '%2C')}&page = {page}&per_page = {await redis.get('hits')}&client_id={await redis.get('tokenspl')}"
-        r = await httpx.get(url, headers=Headers, follow_redirects=True)
+        r = httpx.get(url, headers=Headers, follow_redirects=True)
         print(r)
         print(f"Spl status: {r.status_code}")
         if r.status_code == 200:
