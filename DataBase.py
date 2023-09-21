@@ -1,15 +1,14 @@
 from pymongo.mongo_client import MongoClient
-from aioredis import Redis
-#from aiogram.fsm.storage.redis import RedisStorage
-uri = "mongodb+srv://design:12345678q@designerandrewdb.atq3pav.mongodb.net/?retryWrites=true&w=majority"
+from redis import Redis
+from dotenv import load_dotenv
+import os
+load_dotenv()
+
 # Create a new client and connect to the server
-client = MongoClient(uri)
+client = MongoClient(os.getenv('uri_db'))
 db = client.designerBot
 coll = db.users_id
 
-redis = Redis(decode_responses=True)
+redis_reg = Redis(decode_responses=True, db=0)
+redis_bot = Redis(decode_responses=True, db=1)
 
-
-#print(coll.update_one({'_id': 563423},{"$set" : {'name': "ElinnuskA"}}))
-
-#print(coll.find_one({'_id': 563423})['tokenpix'])

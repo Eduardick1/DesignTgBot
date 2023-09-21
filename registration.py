@@ -1,20 +1,16 @@
 from aiogram.fsm.context import FSMContext
 from aiogram import Router
-from aiogram.fsm.state import State, StatesGroup
 # from aiogram import types, Dispatcher
 from aiogram.types import InlineKeyboardMarkup, Message, CallbackQuery
 from asyncio import sleep
-from createBot import bot
+from createBot import bot, tokenfsm
 from keybords import istartkb, tokenpixurl, tokenpexurl, tokensplurl, amount_unreg_kb
-from DataBase import coll, redis
-from typing import AnyStr, List
+from DataBase import coll, redis_reg as redis
+
 
 register_router = Router()
 
-class tokenfsm(StatesGroup):
-    tokenpix = State()
-    tokenpex = State()
-    tokenspl = State()
+
 
 
 attemptpix: int = 0
@@ -25,7 +21,7 @@ async def get_list_unreg() -> list:
     tokens = ['tokenpix', 'tokenpex', 'tokenspl']
     unreg_tokens = []
     for t in tokens:
-        if await redis.get(t) == 'Unregistered':
+        if redis.get(t) == 'Unregistered':
             unreg_tokens.append(t)
     return unreg_tokens
 
