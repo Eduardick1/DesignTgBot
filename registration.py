@@ -1,151 +1,150 @@
+from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
-from aiogram import Router
-# from aiogram import types, Dispatcher
-from aiogram.types import InlineKeyboardMarkup, Message, CallbackQuery
-from asyncio import sleep
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, Message, CallbackQuery
+from keybords import unreg_kb, get_reg
+from DataBase import coll, redis_reg, redis_bot
 from createBot import bot, tokenfsm
-from keybords import istartkb, tokenpixurl, tokenpexurl, tokensplurl, amount_unreg_kb
-from DataBase import coll, redis_reg as redis
+from asyncio import sleep
 
 
 register_router = Router()
 
 
-
-
-attemptpix: int = 0
-attemptpex: int = 0
-attemptspl: int = 0
-
-async def get_list_unreg() -> list:
-    tokens = ['tokenpix', 'tokenpex', 'tokenspl']
-    unreg_tokens = []
-    for t in tokens:
-        if redis.get(t) == 'Unregistered':
-            unreg_tokens.append(t)
-    return unreg_tokens
-
-def get_amount_of_unreg(list: list) -> int:
-    return len(list)
-
-async def get_registerText() -> str:
+def get_registerText() -> str:
     
-    quantity = get_amount_of_unreg(await get_list_unreg())
-    if quantity == 3:
-        return "<b>Привет, {}</b>\n\nВозможно ты первый раз работаешь с этим ботом\n\nПоэтому для корректной работы и для возможности пользоваться всем функционалом бота, тебе следует настроить <b>API</b> каждого сервиса, тоесть подключить твои аккаунты:\n<i>PixaBay</i>, <i>Pexels</i>, <i>Unsplash</i>\n\nЭта первоначальная настройка займёт от 5 до 10 минут, в дальнейшем тебе не нужно будет этим заниматься, так как бот тебя запомнит\n\nВыбери сервис, с которого хочешь начать" 
+    if len(get_reg()) == 0:
+        return "Привет, {}\n\nВозможно ты первый раз работаешь с этим ботом\
+                \n\nТебе следует настроить API каждого сервиса, тоесть подключить твои аккаунты для корректной работы и для возможности пользоваться всем функционалом бота, :\
+                \n <i>PixaBay</i>, <i>Pexels</i>, <i>Unsplash</i>\
+                \n\nЭта первоначальная настройка займёт от 5 до 10 минут, в дальнейшем тебе не нужно будет этим заниматься, так как бот тебя запомнит\
+                \n\nВыбери сервис, с которого хочешь начать" 
     else:
-        return "<b>Привет, {}</b>\n\nУ тебя ещё {} незарегестрированных токенов\n\nДля корректной работы и для возможности пользоваться всем функционалом бота, тебе следует настроить оставшиеся <b>API</b>"
-
-async def registerM(message: CallbackQuery):
-    try:
-        await bot.edit_message_text(chat_id=message.message.chat.id, #type: ignore
-                                    message_id=message.message.message_id, #type: ignore
-                                    text=str(await get_registerText()).format(message.from_user.first_name, get_amount_of_unreg(await get_list_unreg())),
-                                    reply_markup=amount_unreg_kb(await get_list_unreg(), get_amount_of_unreg(await get_list_unreg())))
-    except Exception as e:
-        print(f"45: {e}")
-        await bot.send_message(chat_id=message.message.chat.id, #type: ignore
-                            #message_id=message.message.message_id, #type: ignore
-                            text=str(await get_registerText()).format(message.from_user.first_name, get_amount_of_unreg(await get_list_unreg())),
-                            reply_markup=amount_unreg_kb(await get_list_unreg(), get_amount_of_unreg(await get_list_unreg())))
+        return "Привет, {}\n\nУ тебя ещё есть незарегестрированные токены\
+                \n\nДля корректной работы и для возможности пользоваться всем функционалом бота, тебе следует настроить оставшиеся сервисы"
 
 
-'''async def registerM(message: Message, state: FSMContext):
-    await message.edit_text(text=f"<b>Привет, {}</b>\n\nВозможно ты первый раз работаешь с этим ботом\n\nПоэтому для корректной работы и для возможности пользоваться всем функционалом бота, тебе следует настроить <b>API</b> каждого сервиса, тоесть подключить твои аккаунты:\n<i>PixaBay</i>, <i>Pexels</i>, <i>Unsplash</i>\n\nЭта первоначальная настройка займёт от 5 до 10 минут, в дальнейшем тебе не нужно будет этим заниматься, так как бот тебя запомнит\n\nДавай начнём с <b><i>PixaBay</i></b>\nПо кнопке ниже ты можешь перейти на сайт <b><i>Pixabay</i></b>\n\nПожайлуста, внимательно следуй каждому пункту инструкции:\n<b>1)</b> Нажав на кнопку ниже, ты переходишь по ссылке и попадаешь на документацию по API\n<b>2)</b> В главе <b>'Search Images' -> 'Parameters' -> 'key(required)'</b> твой API выделен зелёным (если ты вошёл на сайт), либо в том же месте будет возможность войти в аккаунт\n<b>3)Скопируй максимально аккуратно, каждый символ\n4)</b> Отправь скопированный API следующим сообщением", # type: ignore
-                            reply_markup=InlineKeyboardMarkup(inline_keyboard=[[tokenpixurl]]))
+@register_router.callback_query(F.data == 'registration')
+async def register(call: CallbackQuery):
+    call.answer()
+    await bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, 
+                                    text=get_registerText().format(call.from_user.first_name),
+                                    reply_markup=unreg_kb())
+
+
+@register_router.callback_query(F.data == 'pix_reg')
+async def start_reg_pix(call: CallbackQuery, state: FSMContext):
+    call.answer()
+    d=await bot.edit_message_text(message_id=call.message.message_id, chat_id=call.message.chat.id, 
+                                reply_markup=InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="PixaBay", url="https://pixabay.com/api/docs/")]]), 
+                                text=f"<i>PixaBay</i>\
+                                    \n\nПо кнопке ниже ты можешь перейти на сайт <i>Pixabay</i>\
+                                    \nПожайлуста, внимательно следуй каждому пункту инструкции:\
+                                    \n\n1) Нажав на кнопку ниже, ты переходишь по ссылке и попадаешь на документацию по API\
+                                    \n2) Переходим по главам 'Search Images' -> 'Parameters' -> 'key(required)'\
+                                    \n3) Твой API выделен зелёным (если ты вошёл на сайт), либо в том же месте будет возможность войти в аккаунт\
+                                    \n4) Скопируй максимально аккуратно, каждый символ\
+                                    \n5) Отправь скопированный API следующим сообщением")
+    redis_bot.sadd('todelete', d.message_id)
     await state.set_state(tokenfsm.tokenpix)
 
-@register_router.message(tokenfsm.tokenpix)
-async def registerpix(message: Message, state: FSMContext):
-    global attemptpix
-    if message.text[0] == "/":  # type: ignore
-        attemptpix += 2
+@register_router.message(tokenfsm.tokenpix, F.content_type == 'text')
+async def reg_pix(message: Message, state: FSMContext):
+    if message.text[0] == "/" or len(message.text) != 34: #Отредактировать тексты
         await bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
-        await bot.send_message(chat_id=message.chat.id,
-                               text="<b>Токен не может начинаться с символа '<i>/</i>'</b>\n\nВ данный момент ты не можешь воспользоваться командой\nПосле ввода токена ты сможешь воспользоваться полным функционалом бота")
+        d=await message.answer(text="Токен не похож сам на себя, попробуй ещё раз!\
+                                \n\nПосле ввода токена ты сможешь воспользоваться полным функционалом бота")
         await sleep(2)
-        await bot.delete_message(chat_id=message.chat.id, message_id=message.message_id + 1)
-    elif len(message.text) < 30:  # type: ignore # type: ignore
-        attemptpix += 2
-        await bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
-        await bot.send_message(chat_id=message.chat.id, text="<b>Токен не похож сам на себя</b>, попробуй ещё раз!")
-        await sleep(2)
-        await bot.delete_message(chat_id=message.chat.id, message_id=message.message_id + 1)
+        await bot.delete_message(chat_id=message.chat.id, message_id=d.message_id)
     else:
-        await state.update_data(tokenpix = str(message.text))
-        await bot.send_message(chat_id=message.chat.id,
-                                text="Теперь продолжим с <i>Pexels</i>\n\nПо кнопке ниже ты можешь перейти на сайт <i>Pexels</i>\n\nПожайлуста, внимательно следуй каждому пункту инструкции:\n<b>1)</b> Нажав на кнопку ниже, ты переходишь по ссылке и попадаешь на стартовую страницу API\n<b>2)</b> Необходимо нажать на кнопку '<b>Get started</b>' и войти в аккаунт\n<b>3)</b> Далее нужно будет заполнить форму(анкету), думаю ты разберёшься как именно, но желательно, чтобы смысл был в учебных целях\n<b>4)</b> После заполнения тебя перекинет на страницу с твоим API-ключом\n<b>5)</b> Скопируй максимально аккуратно, каждый символ\n6) Отправь скопированный API следующим сообщением",
-                                reply_markup=InlineKeyboardMarkup(inline_keyboard=[[tokenpexurl]]))
-        await state.set_state(tokenfsm.tokenpex)
+        redis_reg.set('tokenpix', message.text)  
+        coll.update_one({'_id': message.from_user.id}, {"$set": {'tokenpix': message.text}})
+        await bot.delete_message(chat_id=message.chat.id, message_id=int(redis_bot.spop('todelete')))
+        await bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
+        await state.clear()
+        await message.answer(reply_markup=unreg_kb(), 
+                            text=f"Токен успешно зарегестрирован!\
+                                \n\nТеперь можешь свободно пользоваться сервисом Pixabay\
+                                \n\nПо кнопке 'Exit' выйдешь в главное меню\
+                                \n\n{'Либо можешь продолжить регистрацию токенов, выбрав сервис ниже' if len(get_reg()) < 3 else ''}")    
 
-@register_router.message(tokenfsm.tokenpex)
-async def registerpex(message: Message, state: FSMContext):
-    global attemptpex
-    if message.text[0] == "/":  # type: ignore
-        attemptpex += 2
-        await bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
-        await bot.send_message(chat_id=message.chat.id,
-                               text="<b>Токен не может начинаться с символа '<i>/</i>'</b>\n\nВ данный момент ты не можешь воспользоваться командой\nПосле ввода токена ты сможешь воспользоваться полным функционалом бота")
-        await sleep(2)
-        await bot.delete_message(chat_id=message.chat.id, message_id=message.message_id + 1)
-    elif len(message.text) < 50:  # type: ignore
-        attemptpex += 2
-        await bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
-        await bot.send_message(chat_id=message.chat.id, text="<b>Токен не похож сам на себя</b>, попробуй ещё раз!")
-        await sleep(2)
-        await bot.delete_message(chat_id=message.chat.id, message_id=message.message_id + 1)
-    else:
-        await state.update_data(tokenpex = str(message.text))  # register as developer if no acc
-        await bot.send_message(chat_id=message.chat.id,
-                                text="И наконец <i>Unsplash</i>\n\nПо кнопке ниже ты можешь перейти на сайт <i>Unsplash</i>\n\nПожайлуста, внимательно следуй каждому пункту инструкции:\n<b>1)</b> Нажав на кнопку ниже, ты переходишь по ссылке и попадаешь на стартовую страницу API\n<b>2)</b> Необходимо нажать на кнопку '<b>Register as a Developer</b>' или '<b>Your apps</b>', если ты уже вошёл в аккаунт предварительно\n<b>3)</b> Далее нужно будет нажать <b>New Application</b>\n<b>4)</b> Ставим галочки и читаем соглашение (по возможности)\n<b>5)</b> Следующим шагом будет заполение анкеты как и на предыдущем сайте\n<b>6)</b> После заполнения тебя перекинет на страницу, созданного Application\n<b>7)</b> Теперь скролишь вниз, находишь раздел '<b>Keys</b>', в котором копируешь '<b><i>Access-Key</i></b>', это и есть необходимый API\n<b>5)</b> Скопируй максимально аккуратно, каждый символ\n<b>6)</b> Отправь скопированный API следующим сообщением",
-                                reply_markup=InlineKeyboardMarkup(inline_keyboard=[[tokensplurl]]))
-        await state.set_state(tokenfsm.tokenspl)
 
-@register_router.message(tokenfsm.tokenspl)
-async def registersplall(message: Message, state: FSMContext):
-    global attemptspl, attemptpix, attemptpex
-    if message.text[0] == "/":  # type: ignore
-        attemptspl += 2
+@register_router.callback_query(F.data == 'pex_reg')
+async def start_reg_pex(call: CallbackQuery, state: FSMContext):
+    call.answer()
+    d=await bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+                                reply_markup=InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="Pexels", url="https://www.pexels.com/api/")]]),
+                                text = "<i>Pexels</i>\
+                                    \n\nПо кнопке ниже ты можешь перейти на сайт <i>Pexels</i>\
+                                    \n\nПожайлуста, внимательно следуй каждому пункту инструкции:\
+                                    \n1) Нажав на кнопку ниже, ты переходишь по ссылке и попадаешь на стартовую страницу API\
+                                    \n2) Необходимо нажать на кнопку 'Get started' и войти в аккаунт\
+                                    \n3) Далее нужно будет заполнить форму(анкету), думаю ты разберёшься как именно, но желательно, чтобы смысл был в учебных целях\
+                                    \n4) После заполнения тебя перекинет на страницу с твоим API-ключом\
+                                    \n5) Скопируй максимально аккуратно, каждый символ\
+                                    \n6) Отправь скопированный API следующим сообщением")
+    redis_bot.sadd('todelete', d.message_id)
+    await state.set_state(tokenfsm.tokenpex)    
+
+@register_router.message(tokenfsm.tokenpex, F.content_type == 'text')
+async def reg_pex(message: Message, state: FSMContext):
+    
+    if message.text[0] == "/" or len(message.text) != 56:  #Отредактировать тексты
         await bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
-        await bot.send_message(chat_id=message.chat.id,
-                               text="<b>Токен не может начинаться с символа '<i>/</i>'</b>\n\nВ данный момент ты не можешь воспользоваться командой\nПосле ввода токена ты сможешь воспользоваться полным функционалом бота")
+        d=await bot.send_message(chat_id=message.chat.id,
+                               text="Токен не похож сам на себя, попробуй ещё раз!\
+                                \n\nПосле ввода токена ты сможешь воспользоваться полным функционалом бота")
         await sleep(2)
-        await bot.delete_message(chat_id=message.chat.id, message_id=message.message_id + 1)
-    elif len(message.text) < 40:  # type: ignore
-        attemptspl += 2
-        await bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
-        await bot.send_message(chat_id=message.chat.id, text="<b>Токен не похож сам на себя</b>, попробуй ещё раз!")
-        await sleep(2)
-        await bot.delete_message(chat_id=message.chat.id, message_id=message.message_id + 1)
+        await bot.delete_message(chat_id=message.chat.id, message_id=d.message_id)
     else:
-        await state.update_data(tokenspl = str(message.text))
-        data = await state.get_data()
-        coll.update_one({'_id': message.from_user.id}, {"$set": {'tokenpix': data['tokenpix'], #type:ignore
-                                                                'tokenpex': data['tokenpex'],
-                                                                'tokenspl': data['tokenspl']}})
-        await bot.send_message(chat_id=message.chat.id,
-                                text="Думаю всё прошло успешно\n\nТеперь перед тобой открыт весь функционал бота!\n\nЕсли в дальнейшем возникнут трудности или ошибки, можешь обратиться к техподдержке для проверки корректности ваших API", 
-                                reply_markup=istartkb)
-        # print(f"attempts pix :{attemptpix}")
-        # print(f"attempts pex :{attemptpex}")
-        # print(f"attempts spl :{attemptspl}")
-        # print(f"Message to delete {message.message_id-(attemptpix+attemptpex+attemptspl)-5} = {message.message_id} - ({attemptpix}+{attemptpex}+{attemptspl}) - 5)
-        await bot.delete_message(chat_id=message.chat.id, message_id=message.message_id - (
-                attemptpix + attemptpex + attemptspl) - 5)  # инфа о пикс
-        # print(f"Message to delete {message.message_id-(attemptpex+attemptspl)-4}")
-        await bot.delete_message(chat_id=message.chat.id,
-                                    message_id=message.message_id - (attemptpex + attemptspl) - 4)  # api pix
-        # print(f"Message to delete {message.message_id-(attemptpex+attemptspl)-3}")
-        await bot.delete_message(chat_id=message.chat.id,
-                                    message_id=message.message_id - (attemptpex + attemptspl) - 3)  # info pex
-        # print(f"Message to delete {message.message_id-(attemptspl)-2}")
-        await bot.delete_message(chat_id=message.chat.id,
-                                    message_id=message.message_id - (attemptspl) - 2)  # api pex
-        # print(f"Message to delete {message.message_id-(attemptspl)-1}")
-        await bot.delete_message(chat_id=message.chat.id,
-                                    message_id=message.message_id - (attemptspl) - 1)  # info spl
-        # print(f"Message to delete {message.message_id}")
-        await bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)  # api spl
-        attemptspl = 0
-        attemptpix = 0
-        attemptpex = 0'''
+        redis_reg.set('tokenpex', message.text)  
+        coll.update_one({'_id': message.from_user.id}, {"$set": {'tokenpex': message.text}})
+        await bot.delete_message(chat_id=message.chat.id, message_id=int(redis_bot.spop('todelete')))
+        await bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
+        await state.clear()
+        await message.answer(reply_markup=unreg_kb(), 
+                            text=f"Токен успешно зарегестрирован!\
+                                \n\nТеперь можешь свободно пользоваться сервисом Pexels\
+                                \n\nПо кнопке 'Exit' выйдешь в главное меню\
+                                \n\n{'Либо можешь продолжить регистрацию токенов, выбрав сервис ниже' if len(get_reg()) < 3 else ''}") 
+          
+
+@register_router.callback_query(F.data == 'spl_reg')
+async def start_reg_spl(call: CallbackQuery, state: FSMContext):
+    call.answer()
+    d=await bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, 
+                                reply_markup=InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="Unsplash", url="https://unsplash.com/developers")]]),
+                                text="<i>Unsplash</i>\
+                                    \n\nПожайлуста, внимательно следуй каждому пункту инструкции:\
+                                    \n\nПо кнопке ниже ты можешь перейти на сайт <i>Unsplash</i>\
+                                    \n1) Нажав на кнопку ниже, ты переходишь по ссылке и попадаешь на стартовую страницу API\
+                                    \n2) Необходимо нажать на кнопку 'Register as a Developer' или 'Your apps', если ты уже вошёл в аккаунт предварительно\
+                                    \n3) Далее нужно будет нажать New Application\
+                                    \n4) Ставим галочки и читаем соглашение (по возможности)\
+                                    \n5) Следующим шагом будет заполение анкеты как и на предыдущем сайте\
+                                    \n6) После заполнения тебя перекинет на страницу, созданного Application\
+                                    \n7) Теперь скролишь вниз, находишь раздел 'Keys', в котором копируешь '<i>Access-Key</i>', это и есть необходимый API\
+                                    \n8) Скопируй максимально аккуратно, каждый символ\
+                                    \n9) Отправь скопированный API следующим сообщением")
+    redis_bot.sadd('todelete', d.message_id)
+    await state.set_state(tokenfsm.tokenspl)    
+
+@register_router.message(tokenfsm.tokenspl, F.content_type == 'text')
+async def reg_spl(message: Message, state: FSMContext):
+    if message.text[0] == "/" or len(message.text) != 43:  #Отредактировать тексты
+        await bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
+        d=await bot.send_message(chat_id=message.chat.id,
+                               text="Токен не похож сам на себя, попробуй ещё раз!\
+                                \n\nПосле ввода токена ты сможешь воспользоваться полным функционалом бота")
+        await sleep(2)
+        await bot.delete_message(chat_id=message.chat.id, message_id=d.message_id)
+    else:
+        redis_reg.set('tokenspl', message.text)  
+        coll.update_one({'_id': message.from_user.id}, {"$set": {'tokenspl': message.text}})
+        await bot.delete_message(chat_id=message.chat.id, message_id=int(redis_bot.spop('todelete')))
+        await bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
+        await state.clear()
+        await message.answer(reply_markup=unreg_kb(),
+                             text=f"Токен успешно зарегестрирован!\
+                                \n\nТеперь можешь свободно пользоваться сервисом Unsplash\
+                                \n\nПо кнопке 'Exit' выйдешь в главное меню\
+                                \n\n{'Либо можешь продолжить регистрацию токенов, выбрав сервис ниже' if len(get_reg()) < 3 else ''}")

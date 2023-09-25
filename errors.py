@@ -1,27 +1,31 @@
-from aiogram.utils.exceptions import InvalidQueryID, MessageCantBeDeleted, MessageCantBeEdited, BadRequest
-from aiogram import Dispatcher
-from createBot import dp
+from aiogram import F, Router
+from aiogram.types import Update, ErrorEvent
+from aiogram.exceptions import TelegramBadRequest, TelegramNetworkError, TelegramNotFound, TelegramServerError, DetailedAiogramError
+from typing import Union
 
-async def errors_handlers(update, exception):
+error_router = Router()
 
-    if isinstance(exception, InvalidQueryID):
-        print(f"InvalidQueryID: {exception}; Update {update}")
+@error_router.errors()
+async def errors_handlers(update: Update, exception: Union[ErrorEvent, Exception]):
+
+    if isinstance(exception, TelegramNetworkError):
+        print(f"Network error: {exception}; Update {update}")
         return True
 
-    if isinstance(exception, MessageCantBeDeleted):
-        print(f"MessageCantBeDeleted: {exception}; Update {update}")
+    if isinstance(exception, TelegramServerError):
+        print(f"Server Error: {exception}; Update {update}")
         return True
     
-    if isinstance(exception, MessageCantBeEdited):
-        print(f"MessageCantBeEdited: {exception}; Update {update}")
+    if isinstance(exception, TelegramNotFound):
+        print(f"Message or Chat or User not found: {exception}; Update {update}")
         return True
     
-    if isinstance(exception, BadRequest):
+    if isinstance(exception, TelegramBadRequest):
         print(f"BadRequest: {exception}; Update {update}")
         return True
     
+    if isinstance(exception, DetailedAiogramError):
+        print(f"Other error: {exception}; Update {update}")
+        return True
+
     print(f"Update: {update}; Exception: {exception}")
-
-def register_errors(dp: Dispatcher):
-
-    dp.register_errors_handler(errors_handlers)

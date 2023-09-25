@@ -1,17 +1,20 @@
-from middlewares import RedisterCheckMiddleWare
+from middlewares import RedisterCheckMiddleWare, Command_manager
 from createBot import dp, bot
+from errors import error_router
 from commands import command_router
 from parserdesign import parse_router
 from messageHandlers import spam_router
+from registration import register_router
 from DataBase import client, redis_reg, redis_bot
 import asyncio
 
 
-async def main():
+async def main(): #Интернэшнл! Отформатировать тексты!!!! Криво вставляются токены при демо режиме 
     dp.message.middleware.register(RedisterCheckMiddleWare())
-    dp.include_routers(parse_router, command_router, spam_router)
+    dp.message.middleware.register(Command_manager())
+    dp.include_routers(error_router, parse_router, command_router, register_router, spam_router)
     await dp.start_polling(bot) 
-
+    
 try:
     client.admin.command('ping')
     print("Pinged your deployment. You successfully connected to MongoDB!")

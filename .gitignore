@@ -1,5 +1,6 @@
-errors.py
 __pycache__
 Bot
 .env
+.gitignore
 test.py
+filters.py
