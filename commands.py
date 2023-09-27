@@ -46,7 +46,7 @@ async def searchM(message: types.Message, state: FSMContext):
         await state.set_state(FSM_.req)
         d2 = await bot.send_message(text="Для поиска фото, придумай ключевые слова(теги):", 
                                     chat_id=message.chat.id)
-        redis.sadd('todelete', [d1.message_id, d2.message_id])
+        redis.sadd('todelete', d1.message_id, d2.message_id)
 
 @command_router.callback_query(F.data == "search")
 async def searchC(callback: types.CallbackQuery, state: FSMContext):
@@ -62,7 +62,7 @@ async def searchC(callback: types.CallbackQuery, state: FSMContext):
         await state.set_state(FSM_.req)
         d2 = await bot.send_message(text="Для поиска фото, придумай ключевые слова(теги):", 
                                     chat_id=callback.message.chat.id) 
-        redis.sadd('todelete', [d1.message_id, d2.message_id])
+        redis.sadd('todelete', d1.message_id, d2.message_id)
 
 #====================🢃🢃🢃===ABILITY_to_DELETE_PHOTO===🢃🢃🢃=====================================================================================================================
 

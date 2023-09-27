@@ -29,7 +29,7 @@ async def cancelFSM(callback: CallbackQuery, state: FSMContext):
         setRedis = redis_bot.smembers('todelete')
         for d in setRedis:
             await bot.delete_message(chat_id = callback.message.chat.id, message_id = int(d))
-        redis_bot.delete(['todelete', 'req', 'hits'])
+        redis_bot.delete('todelete', 'req', 'hits')
         await startC(callback)
 
 #====================🢃🢃🢃===FSM_COLLECTING_REQUEST===🢃🢃🢃====================================================================================================================
@@ -49,7 +49,7 @@ async def collect_request(message: Message, state: FSMContext):
             await state.set_state(FSM_.hits)
             d1 = await bot.send_message(text = "Введи <b>количество</b> необходимых медиа:", 
                                         chat_id = message.chat.id)
-            redis_bot.sadd('todelete', [message.message_id, d1.message_id])
+            redis_bot.sadd('todelete', message.message_id, d1.message_id)
 
 
 @parse_router.message(FSM_.hits, F.text.regexp('[0-9]+')) #ПОДУМАТЬ НА РЕФАКТОРИНГОМ
@@ -140,7 +140,7 @@ async def parsing_pix(callback: CallbackQuery, type: str = "all"):
                                         reply_markup= InlineKeyboardMarkup(inline_keyboard = [[InlineKeyboardButton(text = "❌", callback_data="delete_photo")], 
                                                                                             [InlineKeyboardButton(text = "Подробнее ⭷", 
                                                                                                                 url = rpix["hits"][photo]["pageURL"])]]))
-        if callback.data == "pixabay":
+        if callback.data not in ['all', 'demo']:
             await bot.send_message(chat_id = callback.message.chat.id, reply_markup = exception_kb(callback),
                                     text = "Можешь выбрать другой сервис, либо изменить <b>Запрос</b> 🔎,\
                                             \nа также перейти в раздел <b>Информация</b> 📖")
@@ -197,7 +197,7 @@ async def parsing_pex(callback: CallbackQuery, demo: int = 0):
                                         reply_markup= InlineKeyboardMarkup( 
                                         inline_keyboard = [[InlineKeyboardButton(text = "❌", callback_data="delete_photo"), 
                                                             InlineKeyboardButton(text = "Подробнее ⭷", url = rpex["photos"][photo]["url"])]]))
-        if callback.data == 'pexel':
+        if callback.data not in ['all', 'demo']:
             await bot.send_message(chat_id = callback.message.chat.id, reply_markup = exception_kb(callback),  
                                     text = "Можешь выбрать другой сервис, либо изменить <b>Запрос</b> 🔎,\
                                             \nа также перейти в раздел <b>Информация</b> 📖")
@@ -249,7 +249,7 @@ async def parsing_spl(callback: CallbackQuery, demo: int = 0):
                                             reply_markup = InlineKeyboardMarkup(inline_keyboard = [
                                                         [InlineKeyboardButton(text = "❌", callback_data="delete_photo"), 
                                                         InlineKeyboardButton(text = "Подробнее ⭷",  url = rspl["results"][photo]["links"]["html"])]]))
-            if callback.data == 'splash':
+            if callback.data not in ['all', 'demo']:
                 await bot.send_message(chat_id = callback.message.chat.id, reply_markup = exception_kb(callback), 
                                         text = "Можешь выбрать другой сервис, либо изменить <b>Запрос</b> 🔎,\
                                             \nа также перейти в раздел <b>Информация</b> 📖")
