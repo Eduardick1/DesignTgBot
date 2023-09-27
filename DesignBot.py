@@ -16,8 +16,10 @@ async def main(): #Отформатировать тексты!!!! Криво в
     dp.message.middleware.register(Command_manager())
     dp.include_routers(error_router, parse_router, command_router, register_router, spam_router)
     #await bot.set_webhook(url=f'{os.getenv("WEBHOOK")}', drop_pending_updates=True)
-    await dp.start_polling(bots=bot, close_bot_session=True)
-    
+    #await dp.start_polling(bots=bot, close_bot_session=True)
+    await dp.feed_webhook_update(bot=bot)
+
+
 try:
     client.admin.command('ping')
     print("Pinged your deployment. You successfully connected to MongoDB!")
