@@ -13,6 +13,7 @@ async def main(): #Интернэшнл! Отформатировать текс
     dp.message.middleware.register(RedisterCheckMiddleWare())
     dp.message.middleware.register(Command_manager())
     dp.include_routers(error_router, parse_router, command_router, register_router, spam_router)
+    await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot) 
     
 try:

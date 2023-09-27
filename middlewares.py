@@ -1,12 +1,13 @@
 from aiogram.dispatcher.middlewares.base import BaseMiddleware
-from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
+
 from DataBase import coll, redis_reg as redis
 from createBot import bot
+
 from typing import Callable, Awaitable, Dict, Any
 
-class RedisterCheckMiddleWare(BaseMiddleware):
 
+class RedisterCheckMiddleWare(BaseMiddleware):
     async def __call__(self, handler: Callable[[Message, Dict[str, Any]], Awaitable[Any]], 
                              event: Message, data: Dict[str, Any]) -> Any:
         if redis.get('_id') and int(redis.get('_id')) == event.from_user.id:
@@ -25,11 +26,9 @@ class RedisterCheckMiddleWare(BaseMiddleware):
                                 'tokenpix': "Unregistered",
                                 'tokenpex': "Unregistered",
                                 'tokenspl': "Unregistered",
-                                'demo': 3})
-                
+                                'demo': 3})       
         return await handler(event, data)
     
-
 
 class Command_manager(BaseMiddleware):
     async def __call__(self, handler: Callable[[Message, Dict[str, Any]], Awaitable[Any]], 
