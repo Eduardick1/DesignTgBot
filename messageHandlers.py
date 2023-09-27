@@ -5,10 +5,10 @@ from DataBase import redis_reg, redis_bot
 
 spam_router = Router()
 
-@spam_router.message(F.text.lower().contains('flushdb'))
-async def flushdb(message: types.Message):
-        await bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
-        redis_reg.flushdb(asynchronous=True)
+# @spam_router.message(F.text.lower().contains('flushdb'))
+# async def flushdb(message: types.Message):
+#         await bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
+#         redis_reg.flushdb(asynchronous=True)
 
 
 @spam_router.message()

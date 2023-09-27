@@ -14,7 +14,7 @@ class tokenfsm(StatesGroup):
     tokenpex = State()
     tokenspl = State()
 
-storage = MemoryStorage()
+storage = MemoryStorage() #
 
 bot = Bot(token=os.getenv('bot_token'), parse_mode="HTML")
 dp = Dispatcher(storage=storage)

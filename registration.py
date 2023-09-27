@@ -13,7 +13,7 @@ from asyncio import sleep
 register_router = Router()
 
 
-#====================🢃🢃🢃===FSM_REGISTERING_PIXABAY_token===🢃🢃🢃=====================================================================================================================
+#====================🢃🢃🢃===FSM_REGISTERING_PIXABAY_token===🢃🢃🢃====================================================================================================================
 
 @register_router.callback_query(F.data == 'pix_reg')
 async def start_reg_pix(callback: CallbackQuery, state: FSMContext):

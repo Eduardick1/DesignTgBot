@@ -32,7 +32,7 @@ async def cancelFSM(callback: CallbackQuery, state: FSMContext):
         redis_bot.delete(['todelete', 'req', 'hits'])
         await startC(callback)
 
-#====================🢃🢃🢃===FSM_COLLECTING_REQUEST===🢃🢃🢃=====================================================================================================================
+#====================🢃🢃🢃===FSM_COLLECTING_REQUEST===🢃🢃🢃====================================================================================================================
 
 @parse_router.message(FSM_.req, F.text)
 async def collect_request(message: Message, state: FSMContext):

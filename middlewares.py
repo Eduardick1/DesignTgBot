@@ -17,9 +17,9 @@ class RedisterCheckMiddleWare(BaseMiddleware):
             user_id: int = event.from_user.id 
             if coll.find_one({'_id': user_id}):
                 redis.set('_id', user_id)
-                redis.set('tokenpix', coll.find_one({'_id': user_id})['tokenpix']) # 36810750-674fa7182bd4b3e51c4cef4bf
-                redis.set('tokenpex', coll.find_one({'_id': user_id})['tokenpex']) # goOlL7n8WOVRn1HyZzeQyduxlmlg3erSDk9PNkZVEuLOYCkA25MUwthN
-                redis.set('tokenspl', coll.find_one({'_id': user_id})['tokenspl']) # TAlJzkst0mlj8NzMOuOvtbd5uZY9YPKzxKKKci6uV-A
+                redis.set('tokenpix', coll.find_one({'_id': user_id})['tokenpix']) 
+                redis.set('tokenpex', coll.find_one({'_id': user_id})['tokenpex']) 
+                redis.set('tokenspl', coll.find_one({'_id': user_id})['tokenspl']) 
             else:
                 coll.insert_one({'_id': user_id, 
                                 'name': event.from_user.full_name, 

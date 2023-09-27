@@ -3,7 +3,7 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 from DataBase import coll, redis_reg as redis
 
 
-cancelkb = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="🚮 Отмена", callback_data="cancel")]])
+cancelkb = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="🚮 Отмена", callback_data="cancel")]]) #
 
 def istart_kb():
     searchbut = InlineKeyboardButton(text="🔎 Поиск медиа", callback_data="search")

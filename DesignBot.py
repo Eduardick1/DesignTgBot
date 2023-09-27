@@ -9,12 +9,11 @@ from DataBase import client, redis_reg, redis_bot
 import asyncio
 
 
-async def main(): #Интернэшнл! Отформатировать тексты!!!! Криво вставляются токены при демо режиме 
+async def main(): #Отформатировать тексты!!!! Криво вставляются токены при демо режиме 
     dp.message.middleware.register(RedisterCheckMiddleWare())
     dp.message.middleware.register(Command_manager())
     dp.include_routers(error_router, parse_router, command_router, register_router, spam_router)
-    await bot.delete_webhook(drop_pending_updates=True)
-    await dp.start_polling(bot) 
+    await bot.set_webhook(url='', drop_pending_updates=True)
     
 try:
     client.admin.command('ping')
